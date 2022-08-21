@@ -9,6 +9,16 @@ module.exports = {
       '@components': resolve('./src/components')
     },
   },
+  devServer:{
+    proxy:{
+      '/v1/':{
+        target: 'http://localhost:3001',
+      
+        changeOrigin: true,
+        pathRewrite: { '^': '' },
+      }
+    }
+  },
   plugins: [
     {
       plugin: CracoLessPlugin,
