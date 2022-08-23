@@ -2,6 +2,7 @@ import api from "@/common/api";
 import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import gsap from "gsap";
+
 const itemHeight = 50;
 const duration = 200;
 const RollCardItemStyle = styled.div<{ height: number }>`

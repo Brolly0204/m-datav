@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import T1Block from "@/components/T1Block"
 import T4Block from "@/components/T4Block"
+import { CountTo, useCountTo } from "@/components/CountTo";
 
 const HomeWrap = styled.div`
   position: relative;
@@ -113,11 +114,27 @@ export default function Home() {
   const handleChangeNum = () => {
     setNumberValue(Date.now())
   }
+  // count to
+  const {countToAction} = useCountTo()
+  const [flopNum, setFlopNum] = useState(646456545515);
+  const changeFlopNum = () => {
+    // const val = flopNumAction.current?.getValue()||0;
+    const newVal = Math.random()*100
+
+    // flopNumAction.current?.setValue()
+    // setFlopNum(newVal)
+    const oldVal = countToAction.current?.getValue()||0;
+
+    // countToAction.current?.setValue(oldVal+newVal)
+
+   setFlopNum(oldVal+newVal)
+  }
   return (
     <HomeWrap>
       {
         loading && <Loading>加载中...</Loading>
       }
+      <HomeWrapImg src={require('@/assets/img/common/bg01.png')} />
       <ImgTop>
         <PageHeader>
           <HeaderImg src={require('@/assets/img/common/header.png')} />
@@ -130,12 +147,14 @@ export default function Home() {
           <button onClick={handleChangeNum}>change number</button>
           <AreaBase areaName='t1'><T1Block /> </AreaBase>
           <AreaBase areaName='t2'>t2</AreaBase>
-          <AreaBase areaName='t3'>t3</AreaBase>
+          <AreaBase areaName='t3'>
+            <CountTo value={flopNum} ref={countToAction} />
+            <button onClick={()=>changeFlopNum()}>changeFlopNum</button>
+          </AreaBase>
           <AreaBase areaName='t4'><T4Block /></AreaBase>
           <AreaBase areaName='t5'>t5</AreaBase>
         </PageContent>
       </ImgTop>
-      <HomeWrapImg src={require('@/assets/img/common/bg01.png')} />
     </HomeWrap>
   )
 }
