@@ -1,12 +1,12 @@
-import { useRef, useEffect, useState } from 'react'
-import styled from 'styled-components';
-import gsap from 'gsap'
 import api from "@/common/api";
-
+import React, { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
+import gsap from "gsap";
 const itemHeight = 50;
-const duration = 500;
+const duration = 200;
 const RollCardItemStyle = styled.div<{ height: number }>`
   padding-top: ${(props) => props.height / 2 + "px"};
+
   overflow: hidden;
 `;
 const RollCardItemWrap = styled.div<{ height: number; totalHeight: number }>`
@@ -23,26 +23,132 @@ const RollCardItem = styled.div<{ height: number; index: number }>`
   left: 0;
   top: ${(props) => props.index * itemHeight + "px"};
   width: 100%;
-  border: 1px solid burlywood;
 `;
-
-export default function () {
-  const [productList, setProduct] = useState<productModel.Datum[]>([])
-  const retryCountRef = useRef(3)
+function T1Block() {
+  const [productList, setProduct] = useState<productModel.Datum[]>([]);
+  const retryCountRef = useRef(3);
   const pageInfoRef = useRef({
     pageSize: 10,
     current: 1,
-    total: 0
-  })
+    total: 0,
+  });
   const currentTranslateRef = useRef(0);
   const [currentTranslateState, setCurrentTranslateState] = useState(0);
+  const startGsap = () => {
+    gsap.fromTo(
+      ".RollCardItem",
+      {
+        duration: duration / 500,
+        delay: duration / 1000,
+        opacity: (_, target) => {
+          if (target.style.opacity === "0") {
+            return 0;
+          }
+          const index = Number(target.tabIndex);
 
+          if (currentTranslateRef.current > index) {
+            return 0;
+          }
+
+          return 1;
+        },
+        // translateY: -currentTranslateRef.current * itemHeight + "px",
+        top: (_, target) => {
+          const index = Number(target.tabIndex);
+          const rpx =
+            -currentTranslateRef.current * itemHeight +
+            index * itemHeight +
+            "px";
+          return rpx;
+        },
+      },
+      {
+        duration: duration / 500,
+        delay: duration / 1000,
+        // translateY: -(currentTranslateRef.current + 1) * itemHeight + "px",
+        top: (_, target) => {
+          const index = Number(target.tabIndex);
+          const rpx =
+            -(currentTranslateRef.current + 1) * itemHeight +
+            index * itemHeight +
+            "px";
+          return rpx;
+        },
+        opacity: (_, target) => {
+          const index = Number(target.tabIndex);
+          if (currentTranslateRef.current === index) {
+            return 0;
+          } else {
+            return 1;
+          }
+        },
+        onComplete: () => {
+          //
+          if (
+            currentTranslateRef.current ===
+            pageInfoRef.current.total - pageInfoRef.current.pageSize - 1
+          ) {
+            setProduct((pro) =>
+              pro.concat(
+                pro.map((p) => ({
+                  ...p,
+                  id: p.id + Math.random(),
+                }))
+              )
+            );
+          }
+          if (currentTranslateRef.current >= pageInfoRef.current.total - 1) {
+            //到头了,重新请求第一页
+            pageInfoRef.current.current = 1;
+            currentTranslateRef.current = 0;
+
+            // 把定位归0下
+            gsap.to(".RollCardItem", {
+              duration: 0,
+              translateY: +"0px",
+            });
+
+            init(1);
+          } else if (
+            currentTranslateRef.current >
+              pageInfoRef.current.pageSize * (pageInfoRef.current.current - 1) -
+                5 &&
+            pageInfoRef.current.current * pageInfoRef.current.pageSize + 1 <
+              pageInfoRef.current.total
+          ) {
+            // 滚一半,中途静默请求
+            // debugger
+
+            init(pageInfoRef.current.current + 1);
+            currentTranslateRef.current = currentTranslateRef.current + 1;
+
+            requestAnimationFrame(() => {
+              setTimeout(() => {
+                startGsap();
+              }, duration);
+            });
+          } else {
+            // 政策情况
+            currentTranslateRef.current = currentTranslateRef.current + 1;
+
+            requestAnimationFrame(() => {
+              setTimeout(() => {
+                startGsap();
+              }, duration);
+            });
+          }
+          // 执行完,无论何种情况,同步下虚拟列表情况
+          setCurrentTranslateState(currentTranslateRef.current);
+        },
+      }
+    );
+  };
   const getProductList = (current?: number) => {
     const c = current || pageInfoRef.current.current;
     // 一次性请求两页,可能到头了
     if (
       c !== 1 &&
-      c  * pageInfoRef.current.pageSize -pageInfoRef.current.total > pageInfoRef.current.pageSize
+      (c - 1) * pageInfoRef.current.pageSize > pageInfoRef.current.total
     ) {
       // debugger
       return Promise.reject({});
@@ -51,7 +157,7 @@ export default function () {
       api
         .invoke<productModel.RootObject>("get", "/v1/products/list", {
           pageSize: pageInfoRef.current.pageSize,
-  
+
           current: c,
         })
         .then(
@@ -64,7 +170,7 @@ export default function () {
             } else {
               setProduct((pro) => pro.concat(res.data));
             }
-  
+
             resolve({});
           },
           () => {
@@ -85,76 +191,49 @@ export default function () {
         );
     });
   };
-
   const init = (start: number) => {
     getProductList(start).then(() => {
-      getProductList(start + 1)
+      getProductList(start + 1);
       if (pageInfoRef.current.current === 1) {
         setTimeout(() => {
-          startGsap()
-        }, duration)
+          startGsap();
+        }, duration);
       }
-    })
-  }
-
-  const startGsap = () => {
-    currentTranslateRef.current += 1
-    gsap.to('.RollCardItem', {
-      duration: duration / 1000,
-      opacity: (_: number, target) => {
-        const index = Number(target.tabIndex)
-        if (currentTranslateRef.current - 1 === index) {
-          return 0
-        }
-        return 1
-      },
-      top: (_: number, target) => {
-      // console.log('target', target.tabIndex, target)
-      const index = Number(target.tabIndex)
-      const rpx = -currentTranslateRef.current * itemHeight + index * itemHeight + 'px'
-      console.log('rpx', rpx)
-      return rpx
-    },
-    onComplete: () => {
-      // setTimeout(() => {
-      //   startGsap()
-      // }, duration)
-    }
-   })
-  }
-
-  const firstRenderRef = useRef(true); 
-  useEffect(() => { // React.StrictMode严格模式下会执行两次
-    if (firstRenderRef.current) {
-      firstRenderRef.current = false
-      return
-    }
-    console.log('useEffect')
-    init(1)
-  }, [])
+    });
+  };
+  // 启动翻滚效果
+  useEffect(() => {
+    init(1);
+  }, []);
   return (
     <RollCardItemStyle height={itemHeight}>
       <RollCardItemWrap
-        className='RollCardItemWrap'
+        className="RollCardItemWrap"
         totalHeight={itemHeight * (pageInfoRef.current.pageSize - 2)}
         height={itemHeight}
       >
-        {
-          (productList || []).map((p, index) => {
-            return (
-              <RollCardItem
-                className={"RollCardItem RollCardItem" + index}
-                key={p.id + p.name}
-                tabIndex={index}
-                index={index}
-                height={itemHeight}
-              >
-                i{index} {p.name}
-              </RollCardItem>
-            )
-          })
-        }
+        {(productList || []).map((p, index) => {
+          const start = currentTranslateState - 2;
+          const end = currentTranslateState + pageInfoRef.current.pageSize + 2;
+
+          if (index > end || index < start) {
+            return null;
+          }
+          return (
+            <RollCardItem
+              className={"RollCardItem RollCardItem" + index}
+              key={p.id + p.name}
+              tabIndex={index}
+              index={index}
+              height={itemHeight}
+            >
+              {p.name}
+            </RollCardItem>
+          );
+        })}
       </RollCardItemWrap>
     </RollCardItemStyle>
-  )
+  );
 }
+
+export default T1Block;

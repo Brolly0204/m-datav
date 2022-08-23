@@ -7,7 +7,7 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode> // 开发环境 严格模式下 useEffect会执行两次
     <Routes />
-  </React.StrictMode>
+  // </React.StrictMode>
 );
