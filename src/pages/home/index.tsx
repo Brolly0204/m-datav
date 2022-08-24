@@ -142,7 +142,8 @@ export default function Home() {
         </PageHeader>
         <PageContent>
           <NumberBlock>
-            <FlopNum value={numberValue} />
+            {/* <FlopNum value={numberValue} /> */}
+            <FlopNum value={Math.round(flopNum)} />
           </NumberBlock>
           <button onClick={handleChangeNum}>change number</button>
           <AreaBase areaName='t1'><T1Block /> </AreaBase>

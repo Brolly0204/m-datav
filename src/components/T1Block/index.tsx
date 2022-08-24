@@ -4,7 +4,7 @@ import styled from "styled-components";
 import gsap from "gsap";
 
 const itemHeight = 50;
-const duration = 200;
+const duration = 1000;
 const RollCardItemStyle = styled.div<{ height: number }>`
   padding-top: ${(props) => props.height / 2 + "px"};
 

@@ -49,7 +49,6 @@ export const CountTo = forwardRef<ICountToAction, ICountToProps>(({
       duration:duration,
       ease:'none',
       onUpdate:()=>{
-
         const valueFmtCecimal = Number(targetValueRef.current.toFixed(decimals))
         setRenderNumber(valueFmtCecimal)
       }
