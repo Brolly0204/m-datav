@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import '@/index.less'
 import 'normalize.css'
 import Routes from '@components/Routes'
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
