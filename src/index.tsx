@@ -3,8 +3,6 @@ import ReactDOM from 'react-dom/client';
 import '@/index.less'
 import 'normalize.css'
 import Routes from '@components/Routes'
-var a = 123
-var b = 888
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
